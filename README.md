@@ -1,1 +1,1 @@
-# gatsby-node-fields-plugin
+# gatsby-plugin-node-fields
