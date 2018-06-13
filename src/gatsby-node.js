@@ -1,6 +1,6 @@
 import attachFields from './attachFields'
 
-const onCreateNode = async (
+const onCreateNode = (
   { node, boundActionCreators },
   { context, descriptors }
 ) => {
