@@ -1,4 +1,4 @@
-import attachFields from '../src/attachFields'
+import attachFields from './attachFields'
 
 const onCreateNode = async (
   { node, boundActionCreators },

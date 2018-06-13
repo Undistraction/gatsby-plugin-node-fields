@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _attachFields = require('../src/attachFields');
+var _attachFields = require('./attachFields');
 
 var _attachFields2 = _interopRequireDefault(_attachFields);
 
