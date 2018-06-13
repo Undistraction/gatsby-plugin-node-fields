@@ -1,0 +1,68 @@
+{
+  "name": "gatsby-node-fields-plugin",
+  "version": "0.0.0",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Undistraction/gatsby-node-fields-plugin.git"
+  },
+  "files": [
+    "dist",
+    "src",
+    "lib"
+  ],
+  "keywords": [],
+  "author": "Pedr Browne",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Undistraction/gatsby-node-fields-plugin/issues"
+  },
+  "homepage": "https://github.com/Undistraction/gatsby-node-fields-plugin",
+  "scripts": {
+    "build": "babel --out-dir ./ --ignore \"__tests__\" src",
+    "prebuild": "npm run lint",
+    "test": "jest --watch",
+    "test:noWatch": "jest",
+    "prepublishOnly": "npm run verify",
+    "publish:patch": "npm version patch && sudo npm publish",
+    "publish:minor": "npm version minor && sudo npm publish",
+    "publish:major": "npm version major && sudo npm publish",
+    "lint": "eslint src",
+    "audit:packages": "yarn outdated || true",
+    "test:cov": "open coverage/index.html",
+    "securityCheck": "nsp check",
+    "verify": "npm run lint && npm run test:noWatch && npm run build"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "6.26.3",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.23.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "codecov": "^3.0.0",
+    "cssbeautify": "^0.3.1",
+    "eslint": "^4.11.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-prettier": "^2.7.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-prettier": "^2.3.1",
+    "eslint-plugin-react": "^7.5.1",
+    "husky": "^0.15.0-rc.8",
+    "jest": "^23.1.0",
+    "nsp": "^3.2.1",
+    "prettier": "^1.13.5"
+  },
+  "dependencies": {
+    "ramda": "^0.25.0",
+    "ramda-adjunct": "^2.5.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "npm run verify"
+    }
+  }
+}

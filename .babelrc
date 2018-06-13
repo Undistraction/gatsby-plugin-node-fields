@@ -1,0 +1,11 @@
+{
+  "plugins": ["transform-es2015-destructuring", "transform-object-rest-spread"],
+  "env": {
+    "test": {
+      "presets": [["env"]]
+    },
+    "development": {
+      "presets": [["env"]]
+    }
+  }
+}
