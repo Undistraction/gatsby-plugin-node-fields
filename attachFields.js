@@ -1,35 +1,27 @@
-"use strict";
+'use strict';
 
-var _require = require("ramda"),
-    isNil = _require.isNil,
-    apply = _require.apply,
-    identity = _require.identity,
-    __ = _require.__,
-    ifElse = _require.ifElse,
-    forEach = _require.forEach,
-    curry = _require.curry,
-    prop = _require.prop,
-    filter = _require.filter,
-    applyTo = _require.applyTo,
-    pipe = _require.pipe;
+var _ramda = require('ramda');
 
-var _require2 = require("ramda-adjunct"),
-    isFunction = _require2.isFunction,
-    isNotEmpty = _require2.isNotEmpty;
+var _ramdaAdjunct = require('ramda-adjunct');
 
 var throwUndefinedFieldError = function throwUndefinedFieldError(fieldName) {
-  throw new Error("Required Field '" + fieldName + "' was nil. Did you mean to set a default value");
+  throw new Error('Required Field \'' + fieldName + '\' was nil. Did you mean to set a default value');
 };
 
 var getDefaultValue = function getDefaultValue(node, context, descriptor) {
-  return ifElse(isFunction, apply(__, [node, context]), identity)(descriptor);
+  return (0, _ramda.ifElse)(_ramdaAdjunct.isFunction, (0, _ramda.apply)(_ramda.__, [node, context]), _ramda.identity)(descriptor);
 };
 
-var attachFieldToNode = curry(function (node, createNodeField, context, descriptor) {
+var attachFieldToNode = (0, _ramda.curry)(function (node, createNodeField, context, descriptor) {
   var fieldName = descriptor.name;
-  var fieldValue = descriptor.getter ? descriptor.getter(node) : getDefaultValue(node, context, descriptor.default);
+  var fieldValue = void 0;
 
-  if (isNil(fieldValue) && node.isRequired) {
+  if (descriptor.getter) fieldValue = descriptor.getter(node);
+  if (!fieldValue) {
+    fieldValue = getDefaultValue(node, context, descriptor.default);
+  }
+
+  if ((0, _ramda.isNil)(fieldValue) && node.isRequired) {
     throwUndefinedFieldError(fieldName);
   }
 
@@ -42,22 +34,22 @@ var attachFieldToNode = curry(function (node, createNodeField, context, descript
   });
 });
 
-var attachFieldsToNode = curry(function (node, createNodeField, context, descriptor) {
-  forEach(attachFieldToNode(node, createNodeField, context), descriptor.fields);
+var attachFieldsToNode = (0, _ramda.curry)(function (node, createNodeField, context, descriptor) {
+  (0, _ramda.forEach)(attachFieldToNode(node, createNodeField, context), descriptor.fields);
 });
 
-var appliesToNode = curry(function (value, descriptor) {
-  return pipe(prop("predicate"), applyTo(value))(descriptor);
+var appliesToNode = (0, _ramda.curry)(function (value, descriptor) {
+  return (0, _ramda.pipe)((0, _ramda.prop)('predicate'), (0, _ramda.applyTo)(value))(descriptor);
 });
 
 var attachFields = function attachFields(node, createNodeField) {
   var descriptors = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var context = arguments[3];
 
-  var descriptorsForNode = filter(appliesToNode(node), descriptors);
+  var descriptorsForNode = (0, _ramda.filter)(appliesToNode(node), descriptors);
 
-  if (isNotEmpty(descriptorsForNode)) {
-    forEach(attachFieldsToNode(node, createNodeField, context), descriptorsForNode);
+  if ((0, _ramdaAdjunct.isNotEmpty)(descriptorsForNode)) {
+    (0, _ramda.forEach)(attachFieldsToNode(node, createNodeField, context), descriptorsForNode);
   }
 };
 

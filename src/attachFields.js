@@ -1,18 +1,17 @@
-const {
-  isNil,
+import {
   apply,
-  identity,
-  __,
-  ifElse,
-  forEach,
-  curry,
-  prop,
-  filter,
   applyTo,
+  curry,
+  filter,
+  forEach,
+  identity,
+  ifElse,
+  isNil,
   pipe,
-} = require(`ramda`)
-
-const { isFunction, isNotEmpty } = require(`ramda-adjunct`)
+  prop,
+  __,
+} from 'ramda'
+import { isFunction, isNotEmpty } from 'ramda-adjunct'
 
 const throwUndefinedFieldError = fieldName => {
   throw new Error(
@@ -26,9 +25,12 @@ const getDefaultValue = (node, context, descriptor) =>
 const attachFieldToNode = curry(
   (node, createNodeField, context, descriptor) => {
     const fieldName = descriptor.name
-    const fieldValue = descriptor.getter
-      ? descriptor.getter(node)
-      : getDefaultValue(node, context, descriptor.default)
+    let fieldValue
+
+    if (descriptor.getter) fieldValue = descriptor.getter(node)
+    if (!fieldValue) {
+      fieldValue = getDefaultValue(node, context, descriptor.default)
+    }
 
     if (isNil(fieldValue) && node.isRequired) {
       throwUndefinedFieldError(fieldName)
