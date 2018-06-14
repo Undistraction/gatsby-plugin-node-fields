@@ -14,12 +14,6 @@ import { isFunction, isNotEmpty } from 'ramda-adjunct'
 import { throwInvalidFieldError } from './errors'
 import validateDescriptors from './validateDescriptors'
 
-// getter (node, context)
-// default (node, context)
-// validator (value)
-// transformer (node, context, value)
-// setter (node, context, createNodeField, value)
-
 const getDefaultValue = (node, context, descriptor) =>
   ifElse(isFunction, apply(__, [node, context]), identity)(descriptor)
 
@@ -31,11 +25,11 @@ const attachFieldToNode = curry(
       : node[fieldName]
 
     if (!fieldValue) {
-      fieldValue = getDefaultValue(node, context, descriptor.default)
+      fieldValue = getDefaultValue(node, context, descriptor.defaultValue)
     }
 
     if (descriptor.validator) {
-      const isValid = descriptor.validator(fieldValue)
+      const isValid = descriptor.validator(fieldValue, context)
       if (!isValid) {
         throwInvalidFieldError(fieldName, fieldValue)
       }

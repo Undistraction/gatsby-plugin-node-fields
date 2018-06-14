@@ -155,11 +155,11 @@ describe(`validate descriptors`, () => {
     })
   })
 
-  it(`is valid for a field with default as function`, () => {
+  it(`is valid for a field with 'defaultValue' as function`, () => {
     const descriptors = [
       {
         predicate: stubFunction,
-        fields: [{ name: `name`, default: stubFunction }],
+        fields: [{ name: `name`, defaultValue: stubFunction }],
       },
     ]
     expect(() => validateDescriptors(descriptors)).not.toThrow()

@@ -4,7 +4,7 @@ const field = Joi.object()
   .keys({
     name: Joi.string(),
     getter: Joi.func(),
-    default: Joi.any(),
+    defaultValue: Joi.any(),
     validator: Joi.func(),
     transformer: Joi.func(),
     setter: Joi.func(),

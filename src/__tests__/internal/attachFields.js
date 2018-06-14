@@ -177,11 +177,11 @@ describe(`attachFields`, () => {
   })
 
   // ---------------------------------------------------------------------------
-  // default field
+  // defaultValue field
   // ---------------------------------------------------------------------------
 
   describe(`when value exits`, () => {
-    it(`default isn't used`, () => {
+    it(`defaultValue isn't used`, () => {
       const node = {
         [name1]: value1,
       }
@@ -192,7 +192,7 @@ describe(`attachFields`, () => {
           fields: [
             {
               name: name1,
-              default: value2,
+              defaultValue: value2,
             },
           ],
         },
@@ -213,9 +213,9 @@ describe(`attachFields`, () => {
   })
 
   describe(`when value doesn't exist`, () => {
-    describe(`when default field is a function`, () => {
-      it(`calls the default field value and uses the return value`, () => {
-        const defaultF = jest.fn().mockReturnValueOnce(value2)
+    describe(`when 'defaultValue' field is a function`, () => {
+      it(`calls the 'defaultValue' field value and uses the return value`, () => {
+        const defaultValue = jest.fn().mockReturnValueOnce(value2)
 
         const node = {
           [key1]: value1,
@@ -227,7 +227,7 @@ describe(`attachFields`, () => {
             fields: [
               {
                 name: name1,
-                default: defaultF,
+                defaultValue,
               },
             ],
           },
@@ -235,7 +235,7 @@ describe(`attachFields`, () => {
 
         attachFields(node, createNode, descriptors)
 
-        expect(defaultF).toBeCalledWith(node, DEFAULT_CONTEXT)
+        expect(defaultValue).toBeCalledWith(node, DEFAULT_CONTEXT)
         expect(createNode.mock.calls).toEqual([
           [
             {
@@ -248,8 +248,8 @@ describe(`attachFields`, () => {
       })
     })
 
-    describe(`when default field is not a function`, () => {
-      it(`uses the default field value`, () => {
+    describe(`when 'defaultValue' field is not a function`, () => {
+      it(`uses the 'defaultValue' field value`, () => {
         const node = {}
 
         const descriptors = [
@@ -258,7 +258,7 @@ describe(`attachFields`, () => {
             fields: [
               {
                 name: name1,
-                default: value2,
+                defaultValue: value2,
               },
             ],
           },
@@ -466,7 +466,7 @@ describe(`attachFields`, () => {
       expect(() => attachFields(EMPTY_NODE, createNode, descriptors)).toThrow(
         `[gatsby-plugin-node-fields] Invalid Field Error: Validator function for field named 'name2' returned false for field value 'undefined'`
       )
-      expect(validator).toBeCalledWith(undefined)
+      expect(validator).toBeCalledWith(undefined, {})
     })
   })
 
@@ -480,7 +480,7 @@ describe(`attachFields`, () => {
           fields: [
             {
               name: name2,
-              default: value1,
+              defaultValue: value1,
               validator,
             },
           ],
@@ -490,7 +490,48 @@ describe(`attachFields`, () => {
       expect(() =>
         attachFields(EMPTY_NODE, createNode, descriptors)
       ).not.toThrow()
-      expect(validator).toBeCalledWith(value1)
+      expect(validator).toBeCalledWith(value1, {})
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // context
+  // ---------------------------------------------------------------------------
+
+  describe(`when context is defined`, () => {
+    it(`is passed to functions`, () => {
+      const getter = jest.fn()
+      const defaultValue = jest.fn()
+      const validator = jest.fn().mockReturnValueOnce(true)
+      const transformer = jest.fn()
+      const setter = jest.fn()
+
+      const context = {
+        value: 1,
+      }
+
+      const descriptors = [
+        {
+          predicate: T,
+          fields: [
+            {
+              getter,
+              defaultValue,
+              validator,
+              transformer,
+              setter,
+            },
+          ],
+        },
+      ]
+
+      attachFields(EMPTY_NODE, createNode, descriptors, context)
+
+      expect(getter).toBeCalledWith(EMPTY_NODE, context)
+      expect(defaultValue).toBeCalledWith(EMPTY_NODE, context)
+      expect(transformer).toBeCalledWith(EMPTY_NODE, context, undefined)
+      expect(validator).toBeCalledWith(undefined, context)
+      expect(setter).toBeCalledWith(EMPTY_NODE, context, createNode, undefined)
     })
   })
 })
