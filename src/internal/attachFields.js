@@ -29,18 +29,18 @@ const attachFieldToNode = curry(
     }
 
     if (descriptor.validator) {
-      const isValid = descriptor.validator(fieldValue, context)
+      const isValid = descriptor.validator(fieldValue, node, context)
       if (!isValid) {
         throwInvalidFieldError(fieldName, fieldValue)
       }
     }
 
     const value = descriptor.transformer
-      ? descriptor.transformer(node, context, fieldValue)
+      ? descriptor.transformer(fieldValue, node, context)
       : fieldValue
 
     if (descriptor.setter) {
-      descriptor.setter(node, context, createNodeField, value)
+      descriptor.setter(value, node, context, createNodeField)
     } else {
       createNodeField({
         node,

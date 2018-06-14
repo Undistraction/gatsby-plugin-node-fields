@@ -305,7 +305,7 @@ describe(`attachFields`, () => {
 
       attachFields(node, createNode, descriptors)
 
-      expect(transformer).toBeCalledWith(node, DEFAULT_CONTEXT, value1)
+      expect(transformer).toBeCalledWith(value1, node, DEFAULT_CONTEXT)
       expect(createNode.mock.calls).toEqual([
         [
           {
@@ -325,7 +325,7 @@ describe(`attachFields`, () => {
   describe(`when setter is defined`, () => {
     describe(`when name is also defined`, () => {
       it(`uses the name setter`, () => {
-        const setter = (node, context, createNodeField, value) => {
+        const setter = (value, node, context, createNodeField) => {
           createNodeField({
             node,
             name: name2,
@@ -365,7 +365,7 @@ describe(`attachFields`, () => {
 
     describe(`when no name is defined`, () => {
       it(`uses the setter`, () => {
-        const setter = (node, context, createNodeField, value) => {
+        const setter = (value, node, context, createNodeField) => {
           createNodeField({
             node,
             name: name2,
@@ -405,7 +405,7 @@ describe(`attachFields`, () => {
 
     describe(`when no name or getter is defined`, () => {
       it(`uses the setter`, () => {
-        const setter = (node, context, createNodeField) => {
+        const setter = (value, node, context, createNodeField) => {
           createNodeField({
             node,
             name: name2,
@@ -466,7 +466,7 @@ describe(`attachFields`, () => {
       expect(() => attachFields(EMPTY_NODE, createNode, descriptors)).toThrow(
         `[gatsby-plugin-node-fields] Invalid Field Error: Validator function for field named 'name2' returned false for field value 'undefined'`
       )
-      expect(validator).toBeCalledWith(undefined, {})
+      expect(validator).toBeCalledWith(undefined, EMPTY_NODE, {})
     })
   })
 
@@ -490,7 +490,7 @@ describe(`attachFields`, () => {
       expect(() =>
         attachFields(EMPTY_NODE, createNode, descriptors)
       ).not.toThrow()
-      expect(validator).toBeCalledWith(value1, {})
+      expect(validator).toBeCalledWith(value1, EMPTY_NODE, {})
     })
   })
 
@@ -529,9 +529,9 @@ describe(`attachFields`, () => {
 
       expect(getter).toBeCalledWith(EMPTY_NODE, context)
       expect(defaultValue).toBeCalledWith(EMPTY_NODE, context)
-      expect(transformer).toBeCalledWith(EMPTY_NODE, context, undefined)
-      expect(validator).toBeCalledWith(undefined, context)
-      expect(setter).toBeCalledWith(EMPTY_NODE, context, createNode, undefined)
+      expect(transformer).toBeCalledWith(undefined, EMPTY_NODE, context)
+      expect(validator).toBeCalledWith(undefined, EMPTY_NODE, context)
+      expect(setter).toBeCalledWith(undefined, EMPTY_NODE, context, createNode)
     })
   })
 })
