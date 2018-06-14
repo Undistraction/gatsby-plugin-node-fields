@@ -6,18 +6,13 @@ import {
   forEach,
   identity,
   ifElse,
-  isNil,
   pipe,
   prop,
   __,
 } from 'ramda'
 import { isFunction, isNotEmpty } from 'ramda-adjunct'
-
-const throwUndefinedFieldError = fieldName => {
-  throw new Error(
-    `Required Field '${fieldName}' was nil. Did you mean to set a default value`
-  )
-}
+import { throwInvalidFieldError } from './errors'
+import validateDescriptors from './validateDescriptors'
 
 const getDefaultValue = (node, context, descriptor) =>
   ifElse(isFunction, apply(__, [node, context]), identity)(descriptor)
@@ -25,26 +20,34 @@ const getDefaultValue = (node, context, descriptor) =>
 const attachFieldToNode = curry(
   (node, createNodeField, context, descriptor) => {
     const fieldName = descriptor.name
-    let fieldValue
+    let fieldValue = descriptor.getter
+      ? descriptor.getter(node)
+      : node[fieldName]
 
-    if (descriptor.getter) fieldValue = descriptor.getter(node)
     if (!fieldValue) {
       fieldValue = getDefaultValue(node, context, descriptor.default)
     }
 
-    if (isNil(fieldValue) && node.isRequired) {
-      throwUndefinedFieldError(fieldName)
+    if (descriptor.validator) {
+      const isValid = descriptor.validator(fieldValue)
+      if (!isValid) {
+        throwInvalidFieldError(fieldName, fieldValue)
+      }
     }
 
     const value = descriptor.transformer
       ? descriptor.transformer(fieldValue, node, context)
       : fieldValue
 
-    createNodeField({
-      node,
-      name: fieldName,
-      value,
-    })
+    if (descriptor.setter) {
+      descriptor.setter(node, createNodeField, value)
+    } else {
+      createNodeField({
+        node,
+        name: fieldName,
+        value,
+      })
+    }
   }
 )
 
@@ -64,7 +67,14 @@ const appliesToNode = curry((value, descriptor) =>
   )(descriptor)
 )
 
-const attachFields = (node, createNodeField, descriptors = {}, context) => {
+const attachFields = (
+  node,
+  createNodeField,
+  descriptors = [],
+  context = {}
+) => {
+  validateDescriptors(descriptors)
+
   const descriptorsForNode = filter(appliesToNode(node), descriptors)
 
   if (isNotEmpty(descriptorsForNode)) {

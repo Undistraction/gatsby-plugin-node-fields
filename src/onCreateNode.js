@@ -1,7 +1,6 @@
-import attachFields from './attachFields'
+import attachFields from './internal/attachFields'
 
-// eslint-disable-next-line import/prefer-default-export
-export const onCreateNode = (
+const onCreateNode = (
   { node, boundActionCreators },
   { context, descriptors }
 ) => {
@@ -10,3 +9,5 @@ export const onCreateNode = (
     attachFields(node, createNodeField, descriptors, context)
   }
 }
+
+export default onCreateNode

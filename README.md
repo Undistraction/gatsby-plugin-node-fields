@@ -1,1 +1,185 @@
 # gatsby-plugin-node-fields
+
+`gatsby-plugin-node-fields` offers you a simple, consistent way to manage the creation of fields on your nodes, with support for default values, transformations and validation of values. 
+
+## Quickstart
+
+### Install
+
+```bash
+yarn add gatsby-plugin-node-fields
+```
+
+You can use `gatsby-plugin-node-fields` either as a standard Gatsby plugin, or you can use it as standalone function.
+
+### Plugin
+
+If you want to use it as a plugin, add it as the last plugin. You can place it anywhere, but bear in mind that it will only see changes made by plugins that come before it. Unless you have a good reason not to, place it last.
+
+```javaScript
+// gatsby-config.js
+
+const plugins = [
+ …
+ {
+  resolve: `gatsby-plugin-node-fields`,
+  options: {
+    descriptors: [
+      …
+    ],
+  },
+ }
+]
+
+module.exports = {
+  plugins,
+}
+
+```
+
+### Function
+
+If you'd prefer to use it as a function in your `gatsby-node.js` file, you need to tie into Gatsby's `onCreateNode` yourself:
+
+```javaScript
+// gatsby-node.js
+
+const { attachFields } = require(`gatsby-plugin-node-fields`)
+
+const descriptors = [
+  …
+]
+
+exports.onCreateNode = ({ node, boundActionCreators }) => {
+  const { createNodeField } = boundActionCreators
+  attachFields(node, createNodeField, descriptors)
+}
+
+```
+
+## Overview
+
+`gatsby-plugin-node-fields` can be used as a function or as a plugin. It allows you to describe any values on a node should be transformed into fields on the same node. It is particularly useful with Markdown nodes' `frontmatter` fields, but you can use it with any values on a node. 
+
+I have found that mixing queries for values stored in a node's `frontmatter` with queries for values stored in its fields is uneven and confusing, so I now transfer all values that I will use in the UI over to fields. This transfer gives us the opportunity to do a number of important things:
+
+- set a default value 
+- validate a value
+- transform a value
+
+This library gives you a consistent way to do this using a series of descriptors.
+
+### Plugin vs Function
+
+The plugin hooks into Gatsby's `onCreateNode` life cycle hook and will check the node it receives against an array of descriptors you provide. Each descriptor must provide a predicate - a function that looks at the node and decides whether the descriptor should be used to transform it. For example we might want to check if the node is Markdown node, or if it represents a file from a particular directory. 
+
+If a descriptor's predicate returns true, the descriptor will be used to create new fields on that node. 
+
+Here is an example of a list of descriptors: 
+
+```javaScript
+[
+  {
+    predicate: isMarkdownNode,
+    fields: [
+      {
+        name: 'title',
+        validator: isString,
+        transformer: preventOrphans,
+      },
+      {
+        name: 'date',
+        default: dateToday,
+        validator: isValidDate,
+      }
+    ]
+  }
+]
+```
+
+### Validation
+
+Your descriptors will be validated against a schema when first used with useful error messages if you have added an invalid field or the value of required field is invalid or missing.
+
+### Descriptors
+
+You must supply an array of descriptors. You can supply an empty array and nothing will happen. Each descriptor is an object with two required fields:
+
+- **predicate** [function] A function that receives the node as its single argument and returns `true` if the descriptor should apply to that node and `false` if it doesn't. 
+- **fields** [array] An array of objects representing fields that will be created on the node. 
+
+### Fields
+
+A field can contain one or more of the following keys that describe which fields it should add. You can perform a one-to-one, many-to-one, or one-to-many mapping between values and fields. The order in which these fields are used is
+
+- `getter` or `name`
+- `default`
+- `validator`
+- `transformer`
+- `setter` or `name`
+
+#### *name* [string] 
+
+A `name` field represents the name of the field that will be created. If no `getter` field is present on the descriptor, it will also be used to access a value on the node. For example if the `name` is 'alpha', it will create a field on the node called 'alpha'. If no `getter` field is present on the descriptor is will try and get the value for this field from `node.alpha`. 
+
+#### *getter* [function] 
+
+A `getter` is a function that gets the value or values from the node. It will receive the node as its argument. If a `getter` is not defined and a `name` is defined, `node[name]` will be used in its place.
+
+A simple getter might look like:
+
+```javaScript
+node => node.frontmatter.title
+```
+
+You could also pull the value from a config object or anywhere else you like.
+
+#### *default* [*] 
+
+A `default` supplies a value in instances where no value exists on the node, or no means of getting a value has been defined on the descriptor. For example if only a `name` was defined and there is no prop on the node with that name, if a `getter` was defined but didn't return any value(s), or if neither a `name` or a `getter` were defined. If `default` is a function, it will called with two arguments - the `node` and a `context` if one was supplied. It should return a default value. If the value of `default` is no a function, that value will be used.
+
+For example you could use an alternative node value if the current value is nil:
+
+value
+
+#### *validator* [function]
+
+A `validator` is just a predicate that receives the value and returns true or false, depending if it deems it to be valid or not. For example we might have a descriptor that has looked up `node.Front Matter.slug`, but there is no slug defined, we use a sanitised version of the title instead:
+
+```javaScript
+node => sanitise(node.fields.title)
+```
+
+#### *transformer* [function]
+
+A `transformer` transforms the value in some way. For example it might run the value through a function that cleans it up or formats it. A transformer function will be called with three arguments: the value, the node and the context, if defined.
+
+```javaScript
+value => preventOrphans(value)
+```
+
+#### *setter* [function]
+
+A *setter* defines how the value(s) are translated to fields. If no `setter` is defined, the *name* field will be used to create a field of that name using Gatsby's `createNodeField` , however using a `setter` function allows more flexibility. For example a value might be an object and we might want to transfer its values to multiple fields. A `setter` will receive three arguments: the value, `createNodeField` and any context. If you define a setter, that setter is responsible for using `createNodeField` to create fields.
+
+```javaScript
+(node, createNodeField, value) => {
+  createNodeField({ 
+    node,
+    name: 'alpha',
+    value: value.beta
+  })
+}
+```
+
+## Maintenance
+
+Gatsby doesn't support ES6 imports, so we need to compile our `./src` to `./lib`, then reference the compiled file from `gatsby-node.js`.
+
+### Tests
+
+Tests are written with Jest:
+
+```bash
+yarn test
+```
