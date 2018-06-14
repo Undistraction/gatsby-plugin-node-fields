@@ -1,7 +1,7 @@
 {
   "name": "gatsby-plugin-node-fields",
   "version": "0.0.2",
-  "main": "lib/index.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Undistraction/gatsby-plugin-node-fields.git"

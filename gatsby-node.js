@@ -1,3 +1,3 @@
-const onCreateNode = require(`./lib/onCreatNode`)
+const onCreateNode = require(`./lib/onCreateNode`)
 
-module.exports.onCreateNode = onCreateNode
+module.exports.onCreateNode = onCreateNode.default
