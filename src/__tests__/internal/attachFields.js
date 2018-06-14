@@ -305,7 +305,7 @@ describe(`attachFields`, () => {
 
       attachFields(node, createNode, descriptors)
 
-      expect(transformer).toBeCalledWith(value1, node, DEFAULT_CONTEXT)
+      expect(transformer).toBeCalledWith(node, DEFAULT_CONTEXT, value1)
       expect(createNode.mock.calls).toEqual([
         [
           {
@@ -325,7 +325,7 @@ describe(`attachFields`, () => {
   describe(`when setter is defined`, () => {
     describe(`when name is also defined`, () => {
       it(`uses the name setter`, () => {
-        const setter = (node, createNodeField, value) => {
+        const setter = (node, context, createNodeField, value) => {
           createNodeField({
             node,
             name: name2,
@@ -365,7 +365,7 @@ describe(`attachFields`, () => {
 
     describe(`when no name is defined`, () => {
       it(`uses the setter`, () => {
-        const setter = (node, createNodeField, value) => {
+        const setter = (node, context, createNodeField, value) => {
           createNodeField({
             node,
             name: name2,
@@ -405,7 +405,7 @@ describe(`attachFields`, () => {
 
     describe(`when no name or getter is defined`, () => {
       it(`uses the setter`, () => {
-        const setter = (node, createNodeField) => {
+        const setter = (node, context, createNodeField) => {
           createNodeField({
             node,
             name: name2,
