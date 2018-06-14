@@ -1,6 +1,6 @@
 # gatsby-plugin-node-fields
 
-`gatsby-plugin-node-fields` offers you a simple, consistent way to manage the creation of fields on your nodes, with support for default values, transformations and validation of values.
+`gatsby-plugin-node-fields` offers you a simple, consistent way to manage the creation of fields on your nodes, with support for default values, transformations and validation of values. It is well tested and uses helpful error messages to guide you away from the rocks. 
 
 ## Quickstart
 
@@ -144,15 +144,16 @@ For example you could use an alternative node value if the current value is nil:
 node => node.someOtherValue
 ```
 
-#### *validator* [function(value, context)]
+#### *validator* [function(value, node, context)]
 
 A `validator` is just a predicate that receives the value and returns true or false, depending if it deems it to be valid or not. For example we might have a descriptor that has looked up `node.Front Matter.slug`, but there is no slug defined, we use a sanitised version of the title instead:
 
 ```javaScript
-node => sanitise(node.fields.title)
+value => isValidDate(value)
 ```
 
-#### *transformer* [function(node, context, value)]
+
+#### *transformer* [function(value, node, context)]
 
 A `transformer` transforms the value in some way. For example it might run the value through a function that cleans it up or formats it. A transformer function will be called with three arguments: the value, the node and the context, if defined.
 
@@ -160,12 +161,13 @@ A `transformer` transforms the value in some way. For example it might run the v
 value => preventOrphans(value)
 ```
 
-#### *setter* [function(node, context, createNodeField, value)]
+
+#### *setter* [function(value, node, context, createNodeField)]
 
 A *setter* defines how the value(s) are translated to fields. If no `setter` is defined, the *name* field will be used to create a field of that name using Gatsby's `createNodeField` , however using a `setter` function allows more flexibility. For example a value might be an object and we might want to transfer its values to multiple fields. A `setter` will receive three arguments: the value, `createNodeField` and any context. If you define a setter, that setter is responsible for using `createNodeField` to create fields.
 
 ```javaScript
-(node, createNodeField, value) => {
+(value, node) => {
   createNodeField({ 
     node,
     name: 'alpha',
