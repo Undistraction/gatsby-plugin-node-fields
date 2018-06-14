@@ -103,10 +103,22 @@ Your descriptors will be validated against a schema when first used with useful 
 
 ### Descriptors
 
-You must supply an array of descriptors. You can supply an empty array and nothing will happen. Each descriptor is an object with two required fields:
+A descriptor decides if a node should have fields added to it, and describes how these new fields should be created. Each descriptor is an object with two required fields:
 
-- **predicate** [function] A function that receives the node as its single argument and returns `true` if the descriptor should apply to that node and `false` if it doesn't. 
-- **fields** [array] An array of objects representing fields that will be created on the node. 
+#### *predicate* [function] 
+
+A function that receives the newly created node as its single argument and returns `true` if the descriptor should apply to that node and `false` if it doesn't. Multiple descriptors can be applied to the same node if their predicates return true. 
+
+#### *fields* [array] 
+
+An array of objects representing fields that will be created on the node. Each object comprises of a set of keys and values that describe the creation process of a new field. You can use as few or as many keys as needed. For example if all you want to do is set a default value you could use only the `name` and `defaultValue` keys:
+
+```javaScript
+{
+  name: 'example',
+  defaultValue: 'Unknown',
+}
+```
 
 ### Fields
 
