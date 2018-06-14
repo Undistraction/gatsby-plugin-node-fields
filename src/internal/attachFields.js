@@ -17,39 +17,33 @@ import validateDescriptors from './validateDescriptors'
 const getDefaultValue = (node, context, descriptor) =>
   ifElse(isFunction, apply(__, [node, context]), identity)(descriptor)
 
-const attachFieldToNode = curry(
-  (node, createNodeField, context, descriptor) => {
-    const fieldName = descriptor.name
-    let fieldValue = descriptor.getter
-      ? descriptor.getter(node, context)
-      : node[fieldName]
+const attachFieldToNode = curry((node, createNodeField, context, fields) => {
+  const { name, getter, defaultValue, validator, transformer, setter } = fields
 
-    if (!fieldValue) {
-      fieldValue = getDefaultValue(node, context, descriptor.defaultValue)
-    }
+  let fieldValue = getter ? getter(node, context) : node[name]
 
-    if (descriptor.validator) {
-      const isValid = descriptor.validator(fieldValue, node, context)
-      if (!isValid) {
-        throwInvalidFieldError(fieldName, fieldValue)
-      }
-    }
-
-    const value = descriptor.transformer
-      ? descriptor.transformer(fieldValue, node, context)
-      : fieldValue
-
-    if (descriptor.setter) {
-      descriptor.setter(value, node, context, createNodeField)
-    } else {
-      createNodeField({
-        node,
-        name: fieldName,
-        value,
-      })
-    }
+  if (!fieldValue) {
+    fieldValue = getDefaultValue(node, context, defaultValue)
   }
-)
+
+  if (validator && !validator(fieldValue, node, context)) {
+    throwInvalidFieldError(name, fieldValue)
+  }
+
+  const value = transformer
+    ? transformer(fieldValue, node, context)
+    : fieldValue
+
+  if (setter) {
+    setter(value, node, context, createNodeField)
+  } else {
+    createNodeField({
+      node,
+      name,
+      value,
+    })
+  }
+})
 
 const attachFieldsToNode = curry(
   (node, createNodeField, context, descriptor) => {
