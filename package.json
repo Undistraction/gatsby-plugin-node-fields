@@ -2,6 +2,7 @@
   "name": "gatsby-plugin-node-fields",
   "version": "0.0.5",
   "main": "index.js",
+  "description": "A Gatsby Plugin and helper function for consitent creation of node fields with support for default values, validations and transformations",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Undistraction/gatsby-plugin-node-fields.git"
@@ -11,7 +12,16 @@
     "src",
     "lib"
   ],
-  "keywords": [],
+  "keywords": [
+    "gatsby",
+    "gatsby-plugin",
+    "defaults",
+    "validation",
+    "fields",
+    "front matter",
+    "node",
+    "config"
+  ],
   "author": "Pedr Browne",
   "license": "MIT",
   "bugs": {
