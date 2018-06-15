@@ -61,13 +61,72 @@ exports.onCreateNode = ({ node, boundActionCreators }) => {
 
 `gatsby-plugin-node-fields` can be used as a function or as a plugin. It allows you to describe any values on a node should be transformed into fields on the same node. It is particularly useful with Markdown nodes' `frontmatter` fields, but you can use it with any values on a node. 
 
-I have found that mixing queries for values stored in a node's `frontmatter` with queries for values stored in its fields is uneven and confusing, so I now transfer all values that I will use in the UI over to fields. This transfer gives us the opportunity to do a number of important things:
+I have found that mixing queries for values stored in a node's `frontmatter` with queries for values stored in generated fields is uneven and confusing, so I now transfer all values that I will use in the UI over to fields. This transfer gives us the opportunity to do a number of important things:
 
 - set a default value 
 - validate a value
 - transform a value
 
-This library gives you a consistent way to do this using a series of descriptors.
+## Some Examples
+
+### Default value for a field
+
+Imagine you have a series of Markdown Articles. They are mainly written by the same person with an occasional guest author. You support an `author` field in your article pages' front matter, but you don't want your regular author to have to add their own name to every article. Effectively you need a default value for `author`. To implement this you would create the following descriptor:
+
+```javaScript
+[
+  {
+    predicate: isArticleNode,
+    fields: [
+      {
+        name: 'author',
+        getter: node => node.frontmatter.author,
+        defaultValue: config.defaults.author,
+      },
+    ]
+  }
+]
+```
+
+This would result in `node.fields.author` being populated with either the author field of the node's front matter, or with a default value pulled from a config object. 
+
+### Transforming a value 
+
+Imagine you allow an author to add a `keywords` field to an article's front matter which you use for the `keywords` metadata of the page (which will be a comma-separated list), and also extract for use as tags. To make these tags easier to work with you want to convert then to an array of strings.
+
+```javaScript
+[
+  {
+    predicate: isArticleNode,
+    fields: [
+      {
+        name: 'tags',
+        getter: node => node.frontmatter.keywords,
+        transformer: value => isEmptyString(value) ? [] : cslToArray(value),
+      },
+    ]
+  }
+]
+```
+
+### Validating a value
+
+It's often better to handle invalid values at compile time rather than trying to handle these values in the UI. Imagine you allow an author to add a `title` keyword to an article's frontmatter. Obviously without a title, an Article shouldn't be valid and it doesn't make sense to set a default title, so you add a validator to ensure the article's title is a non-empty string.
+
+```javaScript
+[
+  {
+    predicate: isArticleNode,
+    fields: [
+      {
+        name: 'title',
+        getter: node => node.frontmatter.title,
+        validator: isNonEmptyString
+      },
+    ]
+  }
+]
+```
 
 ### Plugin vs Function
 
