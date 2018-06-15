@@ -57,16 +57,6 @@ exports.onCreateNode = ({ node, boundActionCreators }) => {
 
 ```
 
-## Overview
-
-`gatsby-plugin-node-fields` can be used as a function or as a plugin. It allows you to describe any values on a node should be transformed into fields on the same node. It is particularly useful with Markdown nodes' `frontmatter` fields, but you can use it with any values on a node. 
-
-I have found that mixing queries for values stored in a node's `frontmatter` with queries for values stored in generated fields is uneven and confusing, so I now transfer all values that I will use in the UI over to fields. This transfer gives us the opportunity to do a number of important things:
-
-- set a default value 
-- validate a value
-- transform a value
-
 ## Some Examples
 
 ### Default value for a field
@@ -155,6 +145,16 @@ Here is an example of a list of descriptors:
   }
 ]
 ```
+
+## Overview
+
+`gatsby-plugin-node-fields` can be used as a function or as a plugin. It allows you to describe any values on a node should be transformed into fields on the same node. It is particularly useful with Markdown nodes' `frontmatter` fields, but you can use it with any values on a node. 
+
+I have found that mixing queries for values stored in a node's `frontmatter` with queries for values stored in generated fields is uneven and confusing, so I now transfer all values that I will use in the UI over to fields. This transfer gives us the opportunity to do a number of important things:
+
+- set a default value 
+- validate a value
+- transform a value
 
 ### Validation
 
