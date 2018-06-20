@@ -1,6 +1,6 @@
 # gatsby-plugin-node-fields
 
-`gatsby-plugin-node-fields` offers you a simple, consistent way to manage the creation of fields on your nodes, with support for default values, transformations and validation of values. It is well tested and uses helpful error messages to guide you away from the rocks. 
+`gatsby-plugin-node-fields` offers you a simple, consistent way to manage the creation of fields on your nodes, with support for default values, transformations and validation of values. It is well tested and uses helpful error messages to guide you away from the rocks.
 
 ## Quickstart
 
@@ -10,9 +10,11 @@
 yarn add gatsby-plugin-node-fields
 ```
 
-You can use `gatsby-plugin-node-fields` either as a standard Gatsby plugin, or you can use it as standalone function.
+### Plugin vs Function
 
-### Plugin
+You can use `gatsby-plugin-node-fields` either as a standard Gatsby plugin, or you can use it as standalone function. Both will perform the same task, but you might prefer to keep node manipulation in your `gatsby-config.js` file instead of via a plugin defined in your `gatsby-config.js`.
+
+#### Plugin
 
 If you want to use it as a plugin, add it as the last plugin. You can place it anywhere, but bear in mind that it will only see changes made by plugins that come before it. Unless you have a good reason not to, place it last.
 
@@ -24,6 +26,7 @@ const plugins = [
  {
   resolve: `gatsby-plugin-node-fields`,
   options: {
+    // Your list of descriptors
     descriptors: [
       …
     ],
@@ -34,18 +37,18 @@ const plugins = [
 module.exports = {
   plugins,
 }
-
 ```
 
-### Function
+#### Function
 
-If you'd prefer to use it as a function in your `gatsby-node.js` file, you need to tie into Gatsby's `onCreateNode` yourself:
+If you'd prefer to use it as a function in your `gatsby-node.js` file, you need to hook into Gatsby's `onCreateNode` yourself, passing in the three arguments it expects:
 
 ```javaScript
 // gatsby-node.js
 
 const { attachFields } = require(`gatsby-plugin-node-fields`)
 
+// Your list of descriptors
 const descriptors = [
   …
 ]
@@ -54,7 +57,6 @@ exports.onCreateNode = ({ node, boundActionCreators }) => {
   const { createNodeField } = boundActionCreators
   attachFields(node, createNodeField, descriptors)
 }
-
 ```
 
 ## Some Examples
@@ -71,16 +73,16 @@ Imagine you have a series of Markdown Articles. They are mainly written by the s
       {
         name: 'author',
         getter: node => node.frontmatter.author,
-        defaultValue: config.defaults.author,
+        defaultValue: 'John Doe',
       },
     ]
   }
 ]
 ```
 
-This would result in `node.fields.author` being populated with either the author field of the node's front matter, or with a default value pulled from a config object. 
+This would result in `node.fields.author` being populated with either the author field of the node's front matter, or with a default value of 'John Doe'. In reality you'd probably want to pull the default value from a config object or similar.
 
-### Transforming a value 
+### Transforming a value
 
 Imagine you allow an author to add a `keywords` field to an article's front matter which you use for the `keywords` metadata of the page (which will be a comma-separated list), and also extract for use as tags. To make these tags easier to work with you want to convert then to an array of strings.
 
@@ -92,12 +94,15 @@ Imagine you allow an author to add a `keywords` field to an article's front matt
       {
         name: 'tags',
         getter: node => node.frontmatter.keywords,
+        defaultValue: '',
         transformer: value => isEmptyString(value) ? [] : cslToArray(value),
       },
     ]
   }
 ]
 ```
+
+Here we again use `getter` to pull the value we want from the node's `frontmatter`. We set it's `defaultValue` to `''`, then we use the `transformer` to either transform the value to an empty array, or to an array of strings using a helper function `cslToArray`. Note that it might seem strange to set a default value, then immediately check it and convert it to an array, but I've found that treating each stage discretely makes for much cleaner code. This way the transformer knows it will receive a string, making it more focused.
 
 ### Validating a value
 
@@ -118,41 +123,13 @@ It's often better to handle invalid values at compile time rather than trying to
 ]
 ```
 
-### Plugin vs Function
-
-The plugin hooks into Gatsby's `onCreateNode` life cycle hook and will check the node it receives against an array of descriptors you provide. Each descriptor must provide a predicate - a function that looks at the node and decides whether the descriptor should be used to transform it. For example we might want to check if the node is Markdown node, or if it represents a file from a particular directory. 
-
-If a descriptor's predicate returns true, the descriptor will be used to create new fields on that node. 
-
-Here is an example of a list of descriptors: 
-
-```javaScript
-[
-  {
-    predicate: isMarkdownNode,
-    fields: [
-      {
-        name: 'title',
-        validator: isString,
-        transformer: preventOrphans,
-      },
-      {
-        name: 'date',
-        defaultValue: dateToday,
-        validator: isValidDate,
-      }
-    ]
-  }
-]
-```
+This will result in an error with a useful message if an article is encountered that doesn't have a title set. For obvious reasons it's better to set a sensible default in most cases, but in instances like this, a useful compile-time error is better than a potentially obscure runtime error, or invalid data being displayed.
 
 ## Overview
 
-`gatsby-plugin-node-fields` can be used as a function or as a plugin. It allows you to describe any values on a node should be transformed into fields on the same node. It is particularly useful with Markdown nodes' `frontmatter` fields, but you can use it with any values on a node. 
-
 I have found that mixing queries for values stored in a node's `frontmatter` with queries for values stored in generated fields is uneven and confusing, so I now transfer all values that I will use in the UI over to fields. This transfer gives us the opportunity to do a number of important things:
 
-- set a default value 
+- set a default value
 - validate a value
 - transform a value
 
@@ -162,13 +139,34 @@ Your descriptors will be validated against a schema when first used with useful 
 
 ### Descriptors
 
-A descriptor decides if a node should have fields added to it, and describes how these new fields should be created. Each descriptor is an object with two required fields:
+The plugin automatically hooks into Gatsby's `onCreateNode` life cycle hook and will check the node it receives against an array of descriptors you provide. Each descriptor must provide a `predicate` - a function that will be passed the node and decides whether the descriptor should be used to transform it. For example we might want to check if the node is Markdown node, or if it represents a file from a particular directory.
 
-#### *predicate* [function] 
+If a descriptor's `predicate` returns true, the descriptor will be used to create new fields on that node using the contents of the descriptor's `fields` array. Each item in the `fields` array represents the creation of one or more fields and describes a series of steps
 
-A function that receives the newly created node as its single argument and returns `true` if the descriptor should apply to that node and `false` if it doesn't. Multiple descriptors can be applied to the same node if their predicates return true. 
+Here is an example of a descriptor that will be run for all markdown nodes, validating that a title exists, then running is through a function called `preventOrphans` before saving it as a `title` field:
 
-#### *fields* [array] 
+```javaScript
+[
+  // Descriptor
+  {
+    predicate: isMarkdownNode,
+    fields: [
+      {
+        name: 'title',
+        getter: node => node.frontmatter.title,
+        validator: isString,
+        transformer: preventOrphans,
+      },
+    ]
+  },
+]
+```
+
+#### _predicate_ [function]
+
+A function that receives the newly created node as its single argument and returns `true` if the descriptor should apply to that node and `false` if it doesn't. Multiple descriptors can be applied to the same node if their predicates return true.
+
+#### _fields_ [array]
 
 An array of objects representing fields that will be created on the node. Each object comprises of a set of keys and values that describe the creation process of a new field. You can use as few or as many keys as needed. For example if all you want to do is set a default value you could use only the `name` and `defaultValue` keys:
 
@@ -181,7 +179,7 @@ An array of objects representing fields that will be created on the node. Each o
 
 ### Fields
 
-A field can contain one or more of the following keys that describe which fields it should add. You can perform a one-to-one, many-to-one, or one-to-many mapping between values and fields. The order in which these fields are used is
+A field can contain one or more of the following keys that describe which fields it should add, and how it should obtain and transform the data that will populate them. You can perform a one-to-one, many-to-one, or one-to-many mapping between values and fields. The order in which these fields are used is
 
 - `getter` or `name`
 - `defaultValue`
@@ -189,11 +187,11 @@ A field can contain one or more of the following keys that describe which fields
 - `transformer`
 - `setter` or `name`
 
-#### *name* [string] 
+#### _name_ [string]
 
-A `name` field represents the name of the field that will be created. If no `getter` field is present on the descriptor, it will also be used to access a value on the node. For example if the `name` is 'alpha', it will create a field on the node called 'alpha'. If no `getter` field is present on the descriptor is will try and get the value for this field from `node.alpha`. 
+A `name` field represents the name of the field that will be created. If no `getter` field is present on the descriptor, it will also be used to access a value on the node. For example if the `name` is 'alpha', it will create a field on the node called 'alpha'. If no `getter` field is present on the descriptor is will try and get the value for this field from `node.alpha`.
 
-#### *getter* [function(node, context)]
+#### _getter_ [function(node, context)]
 
 A `getter` is a function that gets the value or values from the node. If a `getter` is not defined and a `name` is defined, `node[name]` will be used in its place.
 
@@ -205,7 +203,7 @@ node => node.frontmatter.title
 
 You could also pull the value from a config object or anywhere else you like.
 
-#### *defaultValue* [* | function(node, context)] 
+#### _defaultValue_ [* | function(node, context)]
 
 A `defaultValue` supplies a value in instances where no value exists on the node, or no means of getting a value has been defined on the descriptor. For example if only a `name` was defined and there is no prop on the node with that name, if a `getter` was defined but didn't return any value(s), or if neither a `name` or a `getter` were defined. If `defaultValue` is a function it should return a default value. If the value of `defaultValue` is not a function, that value will be used as the default value.
 
@@ -215,7 +213,7 @@ For example you could use an alternative node value if the current value is nil:
 node => node.someOtherValue
 ```
 
-#### *validator* [function(value, node, context)]
+#### _validator_ [function(value, node, context)]
 
 A `validator` is just a predicate that receives the value and returns true or false, depending if it deems it to be valid or not. For example we might have a descriptor that has looked up `node.Front Matter.slug`, but there is no slug defined, we use a sanitised version of the title instead:
 
@@ -223,8 +221,7 @@ A `validator` is just a predicate that receives the value and returns true or fa
 value => isValidDate(value)
 ```
 
-
-#### *transformer* [function(value, node, context)]
+#### _transformer_ [function(value, node, context)]
 
 A `transformer` transforms the value in some way. For example it might run the value through a function that cleans it up or formats it. A transformer function will be called with three arguments: the value, the node and the context, if defined.
 
@@ -232,14 +229,13 @@ A `transformer` transforms the value in some way. For example it might run the v
 value => preventOrphans(value)
 ```
 
+#### _setter_ [function(value, node, context, createNodeField)]
 
-#### *setter* [function(value, node, context, createNodeField)]
-
-A *setter* defines how the value(s) are translated to fields. If no `setter` is defined, the *name* field will be used to create a field of that name using Gatsby's `createNodeField` , however using a `setter` function allows more flexibility. For example a value might be an object and we might want to transfer its values to multiple fields. A `setter` will receive three arguments: the value, `createNodeField` and any context. If you define a setter, that setter is responsible for using `createNodeField` to create fields.
+A _setter_ defines how the value(s) are translated to fields. If no `setter` is defined, the _name_ field will be used to create a field of that name using Gatsby's `createNodeField` , however using a `setter` function allows more flexibility. For example a value might be an object and we might want to transfer its values to multiple fields. A `setter` will receive three arguments: the value, `createNodeField` and any context. If you define a setter, that setter is responsible for using `createNodeField` to create fields.
 
 ```javaScript
 (value, node) => {
-  createNodeField({ 
+  createNodeField({
     node,
     name: 'alpha',
     value: value.beta
@@ -249,12 +245,11 @@ A *setter* defines how the value(s) are translated to fields. If no `setter` is 
 
 ### Context
 
-To keep things as functional as possible and prevent the need for you to reach out to external data sources from within your functions, you can pass in a `context`. Context can be anything you like, but will probably be an object. `getter`, `defaultValue`, `validator`, `transformer`, and `setter` functions all receive the context as their second argument. 
+To keep things as functional as possible and prevent the need for you to reach out to external data sources from within your functions, you can pass in a `context`. Context can be anything you like, but will probably be an object. `getter`, `defaultValue`, `validator`, `transformer`, and `setter` functions all receive the context as their second argument.
 
 If you are using the plugin, pass the context as an option:
 
 ```javaScript
-
 {
   resolve: `gatsby-plugin-node-fields`,
   options: {
