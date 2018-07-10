@@ -210,6 +210,38 @@ describe(`attachFields`, () => {
         ],
       ])
     })
+
+    describe(`when value is 'false'`, () => {
+      it(`defaultValue isn't used`, () => {
+        const node = {
+          [name1]: false,
+        }
+
+        const descriptors = [
+          {
+            predicate: T,
+            fields: [
+              {
+                name: name1,
+                defaultValue: true,
+              },
+            ],
+          },
+        ]
+
+        attachFields(node, createNode, descriptors)
+
+        expect(createNode.mock.calls).toEqual([
+          [
+            {
+              node,
+              name: name1,
+              value: false,
+            },
+          ],
+        ])
+      })
+    })
   })
 
   describe(`when value doesn't exist`, () => {

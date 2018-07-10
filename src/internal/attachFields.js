@@ -22,7 +22,7 @@ const attachFieldToNode = curry((node, createNodeField, context, fields) => {
 
   let fieldValue = getter ? getter(node, context) : node[name]
 
-  if (!fieldValue) {
+  if (isUndefined(fieldValue)) {
     fieldValue = getDefaultValue(node, context, defaultValue)
   }
 

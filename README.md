@@ -205,9 +205,16 @@ You could also pull the value from a config object or anywhere else you like.
 
 #### _defaultValue_ [* | function(node, context)]
 
-A `defaultValue` supplies a value in instances where no value exists on the node, or no means of getting a value has been defined on the descriptor. For example if only a `name` was defined and there is no prop on the node with that name, if a `getter` was defined but didn't return any value(s), or if neither a `name` or a `getter` were defined. If `defaultValue` is a function it should return a default value. If the value of `defaultValue` is not a function, that value will be used as the default value.
+A `defaultValue` supplies a value in instances where no value exists on the node (the value is `undefined`), or no means of getting a value has been defined on the descriptor. In the following cases `defaultValue` will be used:
 
-For example you could use an alternative node value if the current value is nil:
+- Only a `name` was defined and there is no prop on the node with that name.
+- A prop of `name` exists with but has a value of `undefined`
+- A `getter` was defined but returned `undefined`,
+- Neither a `name` nor a `getter` were defined.
+
+If `defaultValue` is a function it should return a default value. If the value of `defaultValue` is not a function, that value will be used as the default value.
+
+For example by using a function, you could use supply a default value using another property of the node:
 
 ```javaScript
 node => node.someOtherValue
