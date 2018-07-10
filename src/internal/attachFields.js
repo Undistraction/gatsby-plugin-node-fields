@@ -10,7 +10,7 @@ import {
   prop,
   __,
 } from 'ramda'
-import { isFunction, isNotEmpty } from 'ramda-adjunct'
+import { isFunction, isNotEmpty, isUndefined } from 'ramda-adjunct'
 import { throwInvalidFieldError } from './errors'
 import validateDescriptors from './validateDescriptors'
 
@@ -20,7 +20,7 @@ const getDefaultValue = (node, context, descriptor) =>
 const attachFieldToNode = curry((node, createNodeField, context, fields) => {
   const { name, getter, defaultValue, validator, transformer, setter } = fields
 
-  let fieldValue = getter ? getter(node, context) : node[name]
+  let fieldValue = isFunction(getter) ? getter(node, context) : node[name]
 
   if (isUndefined(fieldValue)) {
     fieldValue = getDefaultValue(node, context, defaultValue)
@@ -30,11 +30,11 @@ const attachFieldToNode = curry((node, createNodeField, context, fields) => {
     throwInvalidFieldError(name, fieldValue)
   }
 
-  const value = transformer
+  const value = isFunction(transformer)
     ? transformer(fieldValue, node, context)
     : fieldValue
 
-  if (setter) {
+  if (isFunction(setter)) {
     setter(value, node, context, createNodeField)
   } else {
     createNodeField({
