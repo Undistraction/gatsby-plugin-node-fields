@@ -1,6 +1,6 @@
 {
   "name": "gatsby-plugin-node-fields",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "main": "index.js",
   "description": "A Gatsby Plugin and helper function for consitent creation of node fields with support for default values, validations and transformations",
   "repository": {
