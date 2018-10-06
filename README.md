@@ -12,7 +12,7 @@ yarn add gatsby-plugin-node-fields
 
 ### Plugin vs Function
 
-You can use `gatsby-plugin-node-fields` either as a standard Gatsby plugin, or you can use it as standalone function. Both will perform the same task, but you might prefer to keep node manipulation in your `gatsby-config.js` file instead of via a plugin defined in your `gatsby-config.js`.
+You can use `gatsby-plugin-node-fields` either as a standard Gatsby plugin, or you can use it as standalone function. Both will perform the same task, but you might prefer to keep node manipulation in your `gatsby-node.js` file instead of via a plugin defined in your `gatsby-config.js`.
 
 #### Plugin
 
