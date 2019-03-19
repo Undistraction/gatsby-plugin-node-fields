@@ -53,8 +53,8 @@ const descriptors = [
   …
 ]
 
-exports.onCreateNode = ({ node, boundActionCreators }) => {
-  const { createNodeField } = boundActionCreators
+exports.onCreateNode = ({ node, actions }) => {
+  const { createNodeField } = actions
   attachFields(node, createNodeField, descriptors)
 }
 ```
