@@ -16,7 +16,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "fields" fails because ["fields" is required]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].fields" is required`
       )
     })
 
@@ -27,7 +27,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "predicate" fails because ["predicate" is required]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].predicate" is required`
       )
     })
 
@@ -44,7 +44,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "fields" fails because ["fields" at position 0 fails because [child "name" fails because ["name" must be a string]]]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].fields[0].name" must be a string`
       )
     })
 
@@ -61,7 +61,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "fields" fails because ["fields" at position 0 fails because [child "name" fails because ["name" must be a string]]]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].fields[0].name" must be a string`
       )
     })
 
@@ -77,7 +77,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "fields" fails because ["fields" at position 0 fails because [child "setter" fails because ["setter" must be a Function]]]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].fields[0].setter" must be of type function`
       )
     })
 
@@ -94,7 +94,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "fields" fails because ["fields" at position 0 fails because [child "getter" fails because ["getter" must be a Function]]]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].fields[0].getter" must be of type function`
       )
     })
 
@@ -111,7 +111,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "fields" fails because ["fields" at position 0 fails because [child "validator" fails because ["validator" must be a Function]]]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].fields[0].validator" must be of type function`
       )
     })
 
@@ -128,7 +128,7 @@ describe(`validate descriptors`, () => {
         },
       ]
       expect(() => validateDescriptors(descriptors)).toThrow(
-        `[gatsby-plugin-node-fields] ValidationError: "value" at position 0 fails because [child "fields" fails because ["fields" at position 0 fails because [child "transformer" fails because ["transformer" must be a Function]]]]`
+        `[gatsby-plugin-node-fields] ValidationError: "[0].fields[0].transformer" must be of type function`
       )
     })
   })

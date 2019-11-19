@@ -14,41 +14,62 @@ import { isFunction, isNotEmpty, isUndefined } from 'ramda-adjunct'
 import { throwInvalidFieldError } from './errors'
 import validateDescriptors from './validateDescriptors'
 
-const getDefaultValue = (node, context, descriptor) =>
-  ifElse(isFunction, apply(__, [node, context]), identity)(descriptor)
+const getDefaultValue = (node, context, boundActionCreators, descriptor) =>
+  ifElse(isFunction, apply(__, [node, context, boundActionCreators]), identity)(
+    descriptor
+  )
 
-const attachFieldToNode = curry((node, createNodeField, context, fields) => {
-  const { name, getter, defaultValue, validator, transformer, setter } = fields
-
-  let fieldValue = isFunction(getter) ? getter(node, context) : node[name]
-
-  if (isUndefined(fieldValue)) {
-    fieldValue = getDefaultValue(node, context, defaultValue)
-  }
-
-  if (validator && !validator(fieldValue, node, context)) {
-    throwInvalidFieldError(name, fieldValue)
-  }
-
-  const value = isFunction(transformer)
-    ? transformer(fieldValue, node, context)
-    : fieldValue
-
-  if (isFunction(setter)) {
-    setter(value, node, context, createNodeField)
-  } else {
-    createNodeField({
-      node,
+const attachFieldToNode = curry(
+  (node, boundActionCreators, context, fields) => {
+    const {
       name,
-      value,
-    })
+      getter,
+      defaultValue,
+      validator,
+      transformer,
+      setter,
+    } = fields
+
+    let fieldValue = isFunction(getter)
+      ? getter(node, context, boundActionCreators)
+      : node[name]
+
+    if (isUndefined(fieldValue)) {
+      fieldValue = getDefaultValue(
+        node,
+        context,
+        boundActionCreators,
+        defaultValue
+      )
+    }
+
+    if (
+      validator &&
+      !validator(fieldValue, node, context, boundActionCreators)
+    ) {
+      throwInvalidFieldError(name, fieldValue)
+    }
+
+    const value = isFunction(transformer)
+      ? transformer(fieldValue, node, context, boundActionCreators)
+      : fieldValue
+
+    if (isFunction(setter)) {
+      setter(value, node, context, boundActionCreators)
+    } else {
+      boundActionCreators.createNodeField({
+        node,
+        name,
+        value,
+      })
+    }
   }
-})
+)
 
 const attachFieldsToNode = curry(
-  (node, createNodeField, context, descriptor) => {
+  (node, boundActionCreators, context, descriptor) => {
     forEach(
-      attachFieldToNode(node, createNodeField, context),
+      attachFieldToNode(node, boundActionCreators, context),
       descriptor.fields
     )
   }
@@ -63,7 +84,7 @@ const appliesToNode = curry((value, descriptor) =>
 
 const attachFields = (
   node,
-  createNodeField,
+  boundActionCreators,
   descriptors = [],
   context = {}
 ) => {
@@ -73,7 +94,7 @@ const attachFields = (
 
   if (isNotEmpty(descriptorsForNode)) {
     forEach(
-      attachFieldsToNode(node, createNodeField, context),
+      attachFieldsToNode(node, boundActionCreators, context),
       descriptorsForNode
     )
   }

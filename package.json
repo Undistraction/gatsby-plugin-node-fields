@@ -1,6 +1,6 @@
 {
   "name": "gatsby-plugin-node-fields",
-  "version": "1.0.0",
+  "version": "2.0.1",
   "main": "index.js",
   "description": "A Gatsby Plugin and helper function for consitent creation of node fields with support for default values, validations and transformations",
   "repository": {
@@ -40,16 +40,16 @@
     "lint": "eslint src",
     "audit:packages": "yarn outdated || true",
     "test:cov": "open coverage/index.html",
-    "securityCheck": "nsp check",
+    "securityCheck": "npm audit",
     "verify": "npm run lint && npm run test:noWatch && npm run build"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-transform-es2015-destructuring": "^6.23.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/plugin-external-helpers": "^7.2.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
+    "@babel/plugin-transform-destructuring": "^7.6.0",
+    "@babel/preset-env": "^7.7.1",
     "codecov": "^3.0.0",
     "cssbeautify": "^0.3.1",
     "eslint": "^4.11.0",
@@ -61,14 +61,13 @@
     "eslint-plugin-prettier": "^2.3.1",
     "eslint-plugin-react": "^7.5.1",
     "husky": "^0.15.0-rc.8",
-    "jest": "^23.1.0",
-    "nsp": "^3.2.1",
+    "jest": "^24.9.0",
     "prettier": "^1.13.5"
   },
   "dependencies": {
-    "joi": "^13.4.0",
-    "ramda": "^0.25.0",
-    "ramda-adjunct": "^2.5.0"
+    "ramda": "^0.26.1",
+    "ramda-adjunct": "^2.22.1",
+    "@hapi/joi": "^16.1.7"
   },
   "husky": {
     "hooks": {

@@ -1,12 +1,11 @@
 import attachFields from './internal/attachFields'
 
 const onCreateNode = (
-  { node, actions },
+  { node, boundActionCreators },
   { context, descriptors }
 ) => {
-  const { createNodeField } = actions
   if (descriptors) {
-    attachFields(node, createNodeField, descriptors, context)
+    attachFields(node, boundActionCreators, descriptors, context)
   }
 }
 
