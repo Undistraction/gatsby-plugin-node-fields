@@ -1,5 +1,7 @@
 # gatsby-plugin-node-fields
 
+Important Change: There has been an important change to the API in reaching V2. All functions now recieve `boundActionCreators` as their final argument. Before, setters would receive `createNodeField`, however like the others they will now receive `boundActionCreators`, from which they can pull `createNodeField` if they need it. This also means that if you are using this as a function, you need to pass in `boundActionCreators` instead of `createNodeField`.
+
 `gatsby-plugin-node-fields` offers you a simple, consistent way to manage the creation of fields on your nodes, with support for default values, transformations and validation of values. It is well tested and uses helpful error messages to guide you away from the rocks.
 
 ## Quickstart
@@ -53,9 +55,8 @@ const descriptors = [
   …
 ]
 
-exports.onCreateNode = ({ node, actions }) => {
-  const { createNodeField } = actions
-  attachFields(node, createNodeField, descriptors)
+exports.onCreateNode = ({ node, boundActionCreators }) => {
+  attachFields(node, boundActionCreators, descriptors)
 }
 ```
 
@@ -191,7 +192,7 @@ A field can contain one or more of the following keys that describe which fields
 
 A `name` field represents the name of the field that will be created. If no `getter` field is present on the descriptor, it will also be used to access a value on the node. For example if the `name` is 'alpha', it will create a field on the node called 'alpha'. If no `getter` field is present on the descriptor is will try and get the value for this field from `node.alpha`.
 
-#### _getter_ [function(node, context)]
+#### _getter_ [function(node, context, boundActionCreators)]
 
 A `getter` is a function that gets the value or values from the node. If a `getter` is not defined and a `name` is defined, `node[name]` will be used in its place.
 
@@ -203,7 +204,7 @@ node => node.frontmatter.title
 
 You could also pull the value from a config object or anywhere else you like.
 
-#### _defaultValue_ [* | function(node, context)]
+#### _defaultValue_ [* | function(node, context, boundActionCreators)]
 
 A `defaultValue` supplies a value in instances where no value exists on the node (the value is `undefined`), or no means of getting a value has been defined on the descriptor. In the following cases `defaultValue` will be used:
 
@@ -220,7 +221,7 @@ For example by using a function, you could use supply a default value using anot
 node => node.someOtherValue
 ```
 
-#### _validator_ [function(value, node, context)]
+#### _validator_ [function(value, node, context, boundActionCreators)]
 
 A `validator` is just a predicate that receives the value and returns true or false, depending if it deems it to be valid or not. For example we might have a descriptor that has looked up `node.Front Matter.slug`, but there is no slug defined, we use a sanitised version of the title instead:
 
@@ -228,7 +229,7 @@ A `validator` is just a predicate that receives the value and returns true or fa
 value => isValidDate(value)
 ```
 
-#### _transformer_ [function(value, node, context)]
+#### _transformer_ [function(value, node, context, boundActionCreators)]
 
 A `transformer` transforms the value in some way. For example it might run the value through a function that cleans it up or formats it. A transformer function will be called with three arguments: the value, the node and the context, if defined.
 
@@ -236,9 +237,9 @@ A `transformer` transforms the value in some way. For example it might run the v
 value => preventOrphans(value)
 ```
 
-#### _setter_ [function(value, node, context, createNodeField)]
+#### _setter_ [function(value, node, context, boundActionCreators)]
 
-A _setter_ defines how the value(s) are translated to fields. If no `setter` is defined, the _name_ field will be used to create a field of that name using Gatsby's `createNodeField` , however using a `setter` function allows more flexibility. For example a value might be an object and we might want to transfer its values to multiple fields. A `setter` will receive three arguments: the value, `createNodeField` and any context. If you define a setter, that setter is responsible for using `createNodeField` to create fields.
+A _setter_ defines how the value(s) are translated to fields. If no `setter` is defined, the _name_ field will be used to create a field of that name using Gatsby's `createNodeField` , however using a `setter` function allows more flexibility. For example a value might be an object and we might want to transfer its values to multiple fields. A `setter` will receive three arguments: the value, `boundActionCreators`, and any context. If you define a setter, that setter is responsible for using `boundActionCreators.createNodeField` to create fields.
 
 ```javaScript
 (value, node) => {
@@ -273,7 +274,7 @@ If you are using the plugin, pass the context as an option:
 If you are using the function, pass it in as the fourth argument:
 
 ```javaScript
-attachFields(node, createNodeField, descriptors, context)
+attachFields(node, boundActionCreators, descriptors, context)
 ```
 
 ## Maintenance
