@@ -19,12 +19,14 @@ const lensPropEq = (name, value) => lensEq(lensProp(name), value)
 
 describe(`attachFields`, () => {
   let createNode
-  let boundActionCreators
+  let actions
+  let getNode
 
   beforeEach(() => {
-    boundActionCreators = {}
+    actions = {}
     createNode = jest.fn()
-    boundActionCreators.createNodeField = createNode
+    getNode = jest.fn()
+    actions.createNodeField = createNode
   })
 
   // ---------------------------------------------------------------------------
@@ -34,7 +36,7 @@ describe(`attachFields`, () => {
   describe(`throws with invalid descriptors`, () => {
     expect(() =>
       // Missing predicate key on descriptor
-      attachFields(EMPTY_NODE, boundActionCreators, [{ fields: [] }])
+      attachFields(EMPTY_NODE, actions, getNode, [{ fields: [] }])
     ).toThrow()
   })
 
@@ -46,7 +48,7 @@ describe(`attachFields`, () => {
     it(`does nothing`, () => {
       const node = {}
 
-      attachFields(node, boundActionCreators)
+      attachFields(node, actions, getNode)
 
       expect(createNode).not.toBeCalled()
     })
@@ -56,7 +58,7 @@ describe(`attachFields`, () => {
     it(`does nothing`, () => {
       const descriptors = [unmatchedDescriptor, unmatchedDescriptor]
 
-      attachFields(EMPTY_NODE, boundActionCreators, descriptors)
+      attachFields(EMPTY_NODE, actions, getNode, descriptors)
 
       expect(createNode).not.toBeCalled()
     })
@@ -88,7 +90,7 @@ describe(`attachFields`, () => {
           ],
         },
       ]
-      attachFields(node, boundActionCreators, descriptors)
+      attachFields(node, actions, getNode, descriptors)
 
       expect(createNode.mock.calls).toEqual([
         [
@@ -130,7 +132,7 @@ describe(`attachFields`, () => {
         },
       ]
 
-      attachFields(node, boundActionCreators, descriptors)
+      attachFields(node, actions, getNode, descriptors)
 
       expect(createNode.mock.calls).toEqual([
         [
@@ -164,7 +166,7 @@ describe(`attachFields`, () => {
         },
       ]
 
-      attachFields(node, boundActionCreators, descriptors)
+      attachFields(node, actions, getNode, descriptors)
 
       expect(createNode.mock.calls).toEqual([
         [
@@ -200,7 +202,7 @@ describe(`attachFields`, () => {
         },
       ]
 
-      attachFields(node, boundActionCreators, descriptors)
+      attachFields(node, actions, getNode, descriptors)
 
       expect(createNode.mock.calls).toEqual([
         [
@@ -231,7 +233,7 @@ describe(`attachFields`, () => {
           },
         ]
 
-        attachFields(node, boundActionCreators, descriptors)
+        attachFields(node, actions, getNode, descriptors)
 
         expect(createNode.mock.calls).toEqual([
           [
@@ -267,12 +269,13 @@ describe(`attachFields`, () => {
           },
         ]
 
-        attachFields(node, boundActionCreators, descriptors)
+        attachFields(node, actions, getNode, descriptors)
 
         expect(defaultValue).toBeCalledWith(
           node,
           DEFAULT_CONTEXT,
-          boundActionCreators
+          actions,
+          getNode
         )
         expect(createNode.mock.calls).toEqual([
           [
@@ -302,7 +305,7 @@ describe(`attachFields`, () => {
           },
         ]
 
-        attachFields(node, boundActionCreators, descriptors)
+        attachFields(node, actions, getNode, descriptors)
 
         expect(createNode.mock.calls).toEqual([
           [
@@ -341,14 +344,16 @@ describe(`attachFields`, () => {
         },
       ]
 
-      attachFields(node, boundActionCreators, descriptors)
+      attachFields(node, actions, getNode, descriptors)
 
       expect(transformer).toBeCalledWith(
         value1,
         node,
         DEFAULT_CONTEXT,
-        boundActionCreators
+        actions,
+        getNode
       )
+
       expect(createNode.mock.calls).toEqual([
         [
           {
@@ -392,7 +397,7 @@ describe(`attachFields`, () => {
           },
         ]
 
-        attachFields(node, boundActionCreators, descriptors)
+        attachFields(node, actions, getNode, descriptors)
 
         expect(createNode.mock.calls).toEqual([
           [
@@ -432,7 +437,7 @@ describe(`attachFields`, () => {
           },
         ]
 
-        attachFields(node, boundActionCreators, descriptors)
+        attachFields(node, actions, getNode, descriptors)
 
         expect(createNode.mock.calls).toEqual([
           [
@@ -471,7 +476,7 @@ describe(`attachFields`, () => {
           },
         ]
 
-        attachFields(node, boundActionCreators, descriptors)
+        attachFields(node, actions, getNode, descriptors)
 
         expect(createNode.mock.calls).toEqual([
           [
@@ -507,7 +512,7 @@ describe(`attachFields`, () => {
       ]
 
       expect(() =>
-        attachFields(EMPTY_NODE, boundActionCreators, descriptors)
+        attachFields(EMPTY_NODE, actions, getNode, descriptors)
       ).toThrow(
         `[gatsby-plugin-node-fields] Invalid Field Error: Validator function for field named 'name2' returned false for field value 'undefined'`
       )
@@ -515,7 +520,8 @@ describe(`attachFields`, () => {
         undefined,
         EMPTY_NODE,
         {},
-        boundActionCreators
+        actions,
+        getNode
       )
     })
   })
@@ -538,14 +544,9 @@ describe(`attachFields`, () => {
       ]
 
       expect(() =>
-        attachFields(EMPTY_NODE, boundActionCreators, descriptors)
+        attachFields(EMPTY_NODE, actions, getNode, descriptors)
       ).not.toThrow()
-      expect(validator).toBeCalledWith(
-        value1,
-        EMPTY_NODE,
-        {},
-        boundActionCreators
-      )
+      expect(validator).toBeCalledWith(value1, EMPTY_NODE, {}, actions, getNode)
     })
   })
 
@@ -580,31 +581,30 @@ describe(`attachFields`, () => {
         },
       ]
 
-      attachFields(EMPTY_NODE, boundActionCreators, descriptors, context)
+      attachFields(EMPTY_NODE, actions, getNode, descriptors, context)
 
-      expect(getter).toBeCalledWith(EMPTY_NODE, context, boundActionCreators)
-      expect(defaultValue).toBeCalledWith(
-        EMPTY_NODE,
-        context,
-        boundActionCreators
-      )
+      expect(getter).toBeCalledWith(EMPTY_NODE, context, actions, getNode)
+      expect(defaultValue).toBeCalledWith(EMPTY_NODE, context, actions, getNode)
       expect(transformer).toBeCalledWith(
         undefined,
         EMPTY_NODE,
         context,
-        boundActionCreators
+        actions,
+        getNode
       )
       expect(validator).toBeCalledWith(
         undefined,
         EMPTY_NODE,
         context,
-        boundActionCreators
+        actions,
+        getNode
       )
       expect(setter).toBeCalledWith(
         undefined,
         EMPTY_NODE,
         context,
-        boundActionCreators
+        actions,
+        getNode
       )
     })
   })
