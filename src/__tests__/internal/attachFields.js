@@ -608,4 +608,25 @@ describe(`attachFields`, () => {
       )
     })
   })
+
+  // ---------------------------------------------------------------------------
+  // getNode
+  // ---------------------------------------------------------------------------
+
+  describe(`getNode function`, () => {
+    it(`is passed to predicate`, () => {
+      const predicate = jest.fn()
+
+      const descriptors = [
+        {
+          predicate,
+          fields: [],
+        },
+      ]
+
+      attachFields(EMPTY_NODE, actions, getNode, descriptors)
+
+      expect(predicate).toBeCalledWith(EMPTY_NODE, getNode)
+    })
+  })
 })

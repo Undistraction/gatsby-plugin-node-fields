@@ -163,9 +163,9 @@ Here is an example of a descriptor that will be run for all markdown nodes, vali
 ]
 ```
 
-#### _predicate_ [function]
+#### _predicate_ [function(node, getNode)]
 
-A function that receives the newly created node as its single argument and returns `true` if the descriptor should apply to that node and `false` if it doesn't. Multiple descriptors can be applied to the same node if their predicates return true.
+A (node, getNode) that receives the newly created node as and returns `true` if the descriptor should apply to that node and `false` if it doesn't. Multiple descriptors can be applied to the same node if their predicates return true. The predicate receives a second argument which is Gatsby's `getNode` (node, getNode). This can be used to extend predicate logic to other related nodes.
 
 #### _fields_ [array]
 
@@ -192,9 +192,9 @@ A field can contain one or more of the following keys that describe which fields
 
 A `name` field represents the name of the field that will be created. If no `getter` field is present on the descriptor, it will also be used to access a value on the node. For example if the `name` is 'alpha', it will create a field on the node called 'alpha'. If no `getter` field is present on the descriptor is will try and get the value for this field from `node.alpha`.
 
-#### _getter_ [function(node, context, actions, getNode)]
+#### _getter_ [(node, getNode)(node, context, actions, getNode)]
 
-A `getter` is a function that gets the value or values from the node. If a `getter` is not defined and a `name` is defined, `node[name]` will be used in its place.
+A `getter` is a (node, getNode) that gets the value or values from the node. If a `getter` is not defined and a `name` is defined, `node[name]` will be used in its place.
 
 A simple getter might look like:
 

@@ -1,6 +1,6 @@
 import {
   apply,
-  applyTo,
+  flip,
   curry,
   filter,
   forEach,
@@ -13,6 +13,8 @@ import {
 import { isFunction, isNotEmpty, isUndefined } from 'ramda-adjunct'
 import { throwInvalidFieldError } from './errors'
 import validateDescriptors from './validateDescriptors'
+
+const applyFlipped = flip(apply)
 
 const getDefaultValue = (node, context, actions, getNode, descriptor) =>
   ifElse(
@@ -60,8 +62,8 @@ const attachFieldsToNode = curry(
   }
 )
 
-const appliesToNode = curry((value, descriptor) =>
-  pipe(prop(`predicate`), applyTo(value))(descriptor)
+const appliesToNode = curry((value, getNode, descriptor) =>
+  pipe(prop(`predicate`), applyFlipped([value, getNode]))(descriptor)
 )
 
 const attachFields = (
@@ -73,7 +75,7 @@ const attachFields = (
 ) => {
   validateDescriptors(descriptors)
 
-  const descriptorsForNode = filter(appliesToNode(node), descriptors)
+  const descriptorsForNode = filter(appliesToNode(node, getNode), descriptors)
 
   if (isNotEmpty(descriptorsForNode)) {
     forEach(
