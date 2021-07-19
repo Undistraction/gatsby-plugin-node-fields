@@ -2,7 +2,7 @@
   "name": "gatsby-plugin-node-fields",
   "version": "3.0.0",
   "main": "index.js",
-  "description": "A Gatsby Plugin and helper function for consitent creation of node fields with support for default values, validations and transformations",
+  "description": "A Gatsby Plugin and helper function for consistent creation of node fields with support for default values, validations and transformations",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Undistraction/gatsby-plugin-node-fields.git"
